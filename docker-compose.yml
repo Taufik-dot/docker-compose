@@ -2,6 +2,11 @@ version: '3.8'
 
 services:
   airflow:
+    profiles:
+      - default
+      - airflow
+    environment:
+      - PROFILE=airflow
     image: apache/airflow:2.8.0
     container_name: airflow
     command: standalone
@@ -11,9 +16,13 @@ services:
       - 8081:8080
 
   postgre:
+    profiles:
+      - default
+      - postgres
     image: postgres:13
     container_name: postgre
     environment:
+      PROFILE=postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: sample
@@ -24,9 +33,13 @@ services:
       - 5431:5432
 
   citus:
+    profiles:
+      - default
+      - citus
     image: citusdata/citus:latest
     container_name: citus
     environment:
+      PROFILE=citus
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: citus
@@ -34,12 +47,4 @@ services:
       - ./citus-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
-
-  airbyte:
-    image: airbyte/airbyte:latest
-    container_name: airbyte
-    volumes:
-      - ./airbyte:/airbyte
-    ports:
-      - 8000:8000
 
