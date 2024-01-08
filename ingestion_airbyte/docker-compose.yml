@@ -344,6 +344,19 @@ services:
       - ./postgre-data/:/var/lib/postgresql/data/
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  #############################################################################
+  # Airflow
+  #############################################################################
+
+  airflow:
+    image: apache/airflow:2.8.0
+    container_name: airflow
+    command: standalone
+    volumes:
+      - ./airflow-dags:/opt/airflow/dags
+    ports:
+      - 8081:8080
+
   
   #############################################################################
   # Citus
