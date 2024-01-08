@@ -2,9 +2,6 @@ version: '3.8'
 
 services:
   airflow:
-    profiles:
-      - default
-      - airflow
     image: apache/airflow:2.8.0
     container_name: airflow
     command: standalone
@@ -12,11 +9,11 @@ services:
       - ./airflow-dags:/opt/airflow/dags
     ports:
       - 8081:8080
-
-  postgre:
     profiles:
       - default
-      - postgres
+      - airflow
+
+  postgre:
     image: postgres:13
     container_name: postgre
     environment:
@@ -28,11 +25,11 @@ services:
       - ./postgres-init:/docker-entrypoint-initdb.d
     ports:
       - 5431:5432
-
-  citus:
     profiles:
       - default
-      - citus
+      - postgres
+
+  citus:
     image: citusdata/citus:latest
     container_name: citus
     environment:
@@ -43,4 +40,7 @@ services:
       - ./citus-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    profiles:
+      - default
+      - citus
 
