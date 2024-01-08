@@ -36,7 +36,7 @@ services:
       - 5432:5432
 
   airbyte:
-    image: airbyte/airbyte
+    image: airbyte/airbyte:latest
     container_name: airbyte
     volumes:
       - ./airbyte:/airbyte
