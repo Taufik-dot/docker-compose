@@ -343,6 +343,9 @@ services:
     volumes:
       - ./postgre-data/:/var/lib/postgresql/data/
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    profiles:
+      - default
+      - postgres
 
   #############################################################################
   # Airflow
@@ -356,50 +359,30 @@ services:
       - ./airflow-dags:/opt/airflow/dags
     ports:
       - 8081:8080
+    profiles:
+      - default
+      - airflow
+
 
   
   #############################################################################
   # Citus
   #############################################################################
 
-  citus-master:
-    container_name: "${COMPOSE_PROJECT_NAME:-citus}_master"
-    image: "citusdata/citus:12.0.0"
+  citus:
+    image: citusdata/citus:latest
+    container_name: citus
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: citus
+    volumes:
+      - ./citus-data:/var/lib/postgresql/data
     ports:
-      - "${COORDINATOR_EXTERNAL_PORT:-15432}:5432"
-    labels:
-      - "com.citusdata.role=Master"
-    environment: &AUTH
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=store
-      - PGUSER=postgres
-      - POSTGRES_HOST_AUTH_METHOD=trust
-    networks:
-      - postgres-network
-    volumes:
-      - ./citus-db-data/:/var/lib/postgresql/data/
-
-  citus-worker:
-    image: "citusdata/citus:12.0.0"
-    labels:
-      - "com.citusdata.role=Worker"
-    depends_on:
-      - citus-manager
-    environment: *AUTH
-    command: "/wait-for-manager.sh"
-    volumes:
-      - ./citus-healthcheck:/healthcheck
-
-  citus-manager:
-    container_name: "${COMPOSE_PROJECT_NAME:-citus}_manager"
-    image: "citusdata/membership-manager:0.3.0"
-    volumes:
-      - "${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock"
-      - ./citus-healthcheck:/healthcheck
-    depends_on:
-      - citus-master
-    environment: *AUTH
+      - 5432:5432
+    profiles:
+      - default
+      - citus
 
 
 volumes:
