@@ -35,3 +35,11 @@ services:
     ports:
       - 5432:5432
 
+  airbyte:
+    image: airbyte/airbyte
+    container_name: airbyte
+    volumes:
+      - ./airbyte:/airbyte
+    ports:
+      - 8000:8000
+
