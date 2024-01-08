@@ -43,67 +43,14 @@ services:
     ports:
       - 8000:8000
 
-  #############################################################################
-  # Citus
-  #############################################################################
-
-  citus-master:
-    container_name: "${COMPOSE_PROJECT_NAME:-citus}_master"
-    image: "citusdata/citus:12.0.0"
+  citus:
+    image: citusdata/citus:latest
+    container_name: citus
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: citus
+    volumes:
+      - ./citus-data:/var/lib/postgresql/data
     ports:
-      - "${COORDINATOR_EXTERNAL_PORT:-15432}:5432"
-    labels:
-      - "com.citusdata.role=Master"
-    environment: &AUTH
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=store
-      - PGUSER=postgres
-      - POSTGRES_HOST_AUTH_METHOD=trust
-    networks:
-      - postgres-network
-    volumes:
-      - ./citus-db-data/:/var/lib/postgresql/data/
-
-  citus-worker:
-    image: "citusdata/citus:12.0.0"
-    labels:
-      - "com.citusdata.role=Worker"
-    depends_on:
-      - citus-manager
-    environment: *AUTH
-    command: "/wait-for-manager.sh"
-    volumes:
-      - ./citus-healthcheck:/healthcheck
-
-  citus-manager:
-    container_name: "${COMPOSE_PROJECT_NAME:-citus}_manager"
-    image: "citusdata/membership-manager:0.3.0"
-    volumes:
-      - "${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock"
-      - ./citus-healthcheck:/healthcheck
-    depends_on:
-      - citus-master
-    environment: *AUTH
-
-
-volumes:
-  workspace:
-    name: ${WORKSPACE_DOCKER_MOUNT}
-  # the data volume is only needed for backward compatibility; when users upgrade
-  # from an old Airbyte version that relies on file-based configs, the server needs
-  # to read this volume to copy their configs to the database
-  data:
-    name: ${DATA_DOCKER_MOUNT}
-  db:
-    name: ${DB_DOCKER_MOUNT}
-
-
-configs:
-  flags:
-    file: ./flags.yml
-
-
-networks: 
-  postgres-network:
-    driver: bridge
+      - 5432:5432
